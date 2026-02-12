@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { getCurrentUser } from '@/lib/auth/auth';
 import { enforceRoleAccess } from '@/lib/auth/roleGuard';
-import Sidebar from '@/components/layout/Sidebar';
+import AppSidebar from '@/components/layout/AppSidebar';
 import Header from '@/components/layout/Header';
+import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar';
 
 export const metadata: Metadata = {
   title: 'Dashboard | UNIVERSITAS',
@@ -35,18 +36,12 @@ export default async function DashboardLayout({
 
   // Renderizar el layout completo con datos ya validados
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
-      {/* Sidebar - Client Component que recibe user como prop */}
-      <Sidebar user={authenticatedUser} />
-
-      {/* Contenido Principal */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header - Client Component que recibe user como prop */}
+    <SidebarProvider defaultOpen={true}>
+      <AppSidebar user={authenticatedUser} />
+      <SidebarInset>
         <Header user={authenticatedUser} />
-
-        {/* Área de contenido scrolleable */}
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

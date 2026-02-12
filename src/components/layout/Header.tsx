@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { LogOut, User, Shield } from 'lucide-react';
 import type { SessionPayload } from '@/lib/auth/types';
 
@@ -55,8 +56,9 @@ export default function Header({ user }: HeaderProps) {
   return (
     <header className="border-b border-gray-200 bg-white shadow-sm">
       <div className="flex h-16 items-center justify-between px-6">
-        {/* Título / Breadcrumbs (espacio para futuras mejoras) */}
-        <div>
+        {/* Botón Toggle + Título */}
+        <div className="flex items-center gap-4">
+          <SidebarTrigger />
           <h2 className="text-xl font-semibold text-gray-800">
             Panel de Control
           </h2>
