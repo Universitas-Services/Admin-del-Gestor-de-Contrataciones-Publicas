@@ -20,6 +20,7 @@ export const DASHBOARD_ROUTES = {
 export const ROLE_ROUTES = {
   UNIVERSITAS: {
     dashboard: '/dashboard',
+    ente: '/dashboard/ente',
     contrataciones: '/dashboard/contrataciones',
     usuarios: '/dashboard/usuarios',
     configuracion: '/dashboard/configuracion',
