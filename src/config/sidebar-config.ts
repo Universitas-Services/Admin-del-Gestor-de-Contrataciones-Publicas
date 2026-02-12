@@ -4,6 +4,7 @@ import {
   Users,
   Settings,
   Building2,
+  ShieldUser,
 } from 'lucide-react';
 
 export interface SidebarItem {
@@ -23,6 +24,11 @@ export const sidebarItems: SidebarItem[] = [
     title: 'Ente',
     href: '/dashboard/ente',
     icon: Building2,
+  },
+  {
+    title: 'Supervisor',
+    href: '/dashboard/supervisor',
+    icon: ShieldUser,
   },
   {
     title: 'Contrataciones',

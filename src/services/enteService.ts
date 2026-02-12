@@ -5,6 +5,14 @@ export interface CreateEnteResponse {
   message: string;
 }
 
+export interface EnteSinSupervisor {
+  id: string;
+  nombre: string;
+  rif: string | null;
+  estado: string | null;
+  municipio: string | null;
+}
+
 /**
  * Servicio de gestión de Entes
  * Contiene todas las llamadas HTTP relacionadas con Entes
@@ -53,6 +61,40 @@ export const enteService = {
       ) {
         const responseData = error.response.data as { message?: string };
         throw new Error(responseData.message || 'Error al crear el Ente');
+      }
+
+      // Error de red u otro tipo
+      throw new Error('Error de conexión con el servidor');
+    }
+  },
+
+  /**
+   * Obtiene la lista de Entes que no tienen Supervisor asignado
+   * Endpoint privado - requiere autenticación (token en header)
+   *
+   * @returns Promise con array de Entes disponibles
+   * @throws Error si la petición falla
+   */
+  getEntesSinSupervisor: async (): Promise<EnteSinSupervisor[]> => {
+    try {
+      const response = await apiClient.get<EnteSinSupervisor[]>(
+        '/entes/sin-supervisor'
+      );
+      return response.data;
+    } catch (error: unknown) {
+      // Manejo genérico de errores
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'data' in error.response
+      ) {
+        const responseData = error.response.data as { message?: string };
+        throw new Error(
+          responseData.message || 'Error al obtener Entes disponibles'
+        );
       }
 
       // Error de red u otro tipo
