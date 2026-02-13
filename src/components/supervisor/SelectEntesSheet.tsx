@@ -53,11 +53,8 @@ export default function SelectEntesSheet({
     setIsLoading(true);
     try {
       const entes = await enteService.getEntesSinSupervisor();
-      // Filtrar entes que ya están seleccionados
-      const filtered = entes.filter(
-        (ente) => !selectedEntes.some((selected) => selected.id === ente.id)
-      );
-      setAvailableEntes(filtered);
+      // Mostrar TODOS los entes, sin filtrar los seleccionados
+      setAvailableEntes(entes);
     } catch (error) {
       toast.error('Error al cargar Entes disponibles', {
         description:
@@ -76,21 +73,19 @@ export default function SelectEntesSheet({
   // Manejar agregar Ente
   function handleAdd(ente: EnteSinSupervisor) {
     onAddEnte(ente);
-    // Remover de la lista disponible
-    setAvailableEntes((prev) => prev.filter((e) => e.id !== ente.id));
+    // El ente permanece visible en la lista
   }
 
   // Manejar quitar Ente
   function handleRemove(ente: EnteSinSupervisor) {
     onRemoveEnte(ente.id);
-    // Agregar de vuelta a la lista disponible
-    setAvailableEntes((prev) => [...prev, ente]);
+    // El ente sigue visible en la lista
   }
 
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-        <SheetHeader>
+      <SheetContent side="right" className="w-100 sm:w-135">
+        <SheetHeader className="shrink-0 pb-0">
           <SheetTitle>Entes disponibles</SheetTitle>
           <SheetDescription>
             Selecciona los Entes para asignar a este Supervisor
@@ -98,7 +93,7 @@ export default function SelectEntesSheet({
         </SheetHeader>
 
         {/* Contenido del Sheet */}
-        <div className="mt-6 max-h-[calc(100vh-150px)] space-y-4 overflow-y-auto">
+        <div className="mt-2 mb-2 flex-1 space-y-4 overflow-y-auto px-2">
           {isLoading ? (
             <div className="flex justify-center py-8">
               <Loader2 className="text-primary h-8 w-8 animate-spin" />
@@ -112,8 +107,11 @@ export default function SelectEntesSheet({
               const isSelected = isEnteSelected(ente.id);
 
               return (
-                <Card key={ente.id}>
-                  <CardContent className="pt-6">
+                <Card
+                  key={ente.id}
+                  className={isSelected ? 'border-2 border-green-500' : ''}
+                >
+                  <CardContent className="p-4">
                     <h4 className="text-lg font-semibold">{ente.nombre}</h4>
                     <div className="mt-3 space-y-1.5 text-sm">
                       <p className={ente.rif ? '' : 'text-muted-foreground'}>
@@ -133,23 +131,38 @@ export default function SelectEntesSheet({
                         {ente.municipio || 'No especificado'}
                       </p>
                     </div>
-                    <div className="mt-4 flex gap-2">
-                      {!isSelected ? (
+                    <div className="mt-4 flex justify-end gap-2">
+                      {isSelected ? (
+                        <>
+                          {/* Botón "Quitar" en rojo - aparece primero */}
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="cursor-pointer"
+                            variant="destructive"
+                            onClick={() => handleRemove(ente)}
+                          >
+                            Quitar
+                          </Button>
+                          {/* Botón "Agregado" disabled - aparece después */}
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            disabled
+                          >
+                            Agregado
+                          </Button>
+                        </>
+                      ) : (
+                        /* Botón "Agregar" cuando NO está seleccionado */
                         <Button
                           type="button"
                           size="sm"
+                          className="cursor-pointer"
                           onClick={() => handleAdd(ente)}
                         >
                           Agregar
-                        </Button>
-                      ) : (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleRemove(ente)}
-                        >
-                          Quitar
                         </Button>
                       )}
                     </div>

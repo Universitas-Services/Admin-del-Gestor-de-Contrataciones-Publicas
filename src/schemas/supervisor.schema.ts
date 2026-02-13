@@ -42,8 +42,8 @@ export const createSupervisorSchema = z.object({
 
   password: z.string().min(1, 'La contraseña es obligatoria'),
 
-  // Entes Asignados (Opcional - pero con default para evitar undefined)
-  entesIds: z.array(z.string().uuid()).default([]),
+  // Entes Asignados (Opcional - se maneja dinámicamente en el formulario)
+  entesIds: z.array(z.string().uuid()).optional(),
 });
 
 export type CreateSupervisorFormData = z.infer<typeof createSupervisorSchema>;

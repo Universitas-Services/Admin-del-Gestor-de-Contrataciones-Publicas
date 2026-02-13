@@ -23,6 +23,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -55,7 +64,6 @@ export default function CreateSupervisorForm() {
       apellidoUsuario: '',
       emailUsuario: '',
       password: '',
-      entesIds: [],
     },
   });
 
@@ -244,22 +252,26 @@ export default function CreateSupervisorForm() {
         {/* Card 3: Entes Asignados */}
         <Card>
           <CardHeader>
-            <CardTitle>Entes Asignados</CardTitle>
-            <CardDescription>
-              Asigna Entes que este Supervisor gestionará (opcional)
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Entes Asignados</CardTitle>
+                <CardDescription>
+                  Asigna Entes que este Supervisor gestionará (opcional)
+                </CardDescription>
+              </div>
+              {/* Botón para abrir Sheet */}
+              <Button
+                type="button"
+                variant="outline"
+                className="cursor-pointer"
+                onClick={() => setIsSheetOpen(true)}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Agregar Ente(s)
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Botón para abrir Sheet */}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsSheetOpen(true)}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Agregar Ente(s)
-            </Button>
-
+          <CardContent>
             {/* Sheet para selección de Entes */}
             <SelectEntesSheet
               isOpen={isSheetOpen}
@@ -269,46 +281,62 @@ export default function CreateSupervisorForm() {
               onRemoveEnte={handleRemoveEnte}
             />
 
-            {/* Lista de Entes Seleccionados */}
-            <div className="space-y-2">
-              {selectedEntes.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  No hay Entes asignados
-                </p>
-              ) : (
-                selectedEntes.map((ente) => (
-                  <div
-                    key={ente.id}
-                    className="flex items-start justify-between rounded-lg border p-3"
-                  >
-                    <div>
-                      <p className="text-sm">
-                        <span className="font-medium">RIF:</span>{' '}
-                        {ente.rif || 'No especificado'}
-                      </p>
-                      <p className="text-sm">
-                        <span className="font-medium">Nombre:</span>{' '}
-                        {ente.nombre}
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveEnte(ente.id)}
+            {/* Tabla de Entes Seleccionados */}
+            <Table>
+              <TableCaption>
+                Puede asignar múltiples entes a un solo supervisor.
+              </TableCaption>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>RIF</TableHead>
+                  <TableHead>NOMBRE</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {selectedEntes.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={3}
+                      className="text-muted-foreground text-center"
                     >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))
-              )}
-            </div>
+                      No hay Entes asignados
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  selectedEntes.map((ente, index) => (
+                    <TableRow
+                      key={ente.id}
+                      className={index % 2 === 0 ? 'bg-muted/50' : ''}
+                    >
+                      <TableCell>{ente.rif || 'No especificado'}</TableCell>
+                      <TableCell>{ente.nombre}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="cursor-pointer"
+                          onClick={() => handleRemoveEnte(ente.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </CardContent>
         </Card>
 
         {/* Botón Submit */}
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting} className="min-w-32">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="min-w-32 cursor-pointer"
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
