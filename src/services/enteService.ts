@@ -13,6 +13,35 @@ export interface EnteSinSupervisor {
   municipio: string | null;
 }
 
+export interface EnteListItem {
+  id: string;
+  universitasId: string;
+  nombre: string;
+  rif: string;
+  siglas: string | null;
+  logoUrl: string | null;
+  direccionFiscal: string | null;
+  estado: string | null;
+  municipio: string | null;
+  parroquia: string | null;
+  nombreUnidadAdminFinanciera: string | null;
+  nombreUnidadTecnologia: string | null;
+  nombreUnidadContratante: string | null;
+  organoAdscripcion: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  createdBy: string;
+  updatedBy: string | null;
+  datosConfirmados: boolean;
+  ciudad: string | null;
+  _count: {
+    usuarios: number;
+    expedientes: number;
+    proveedores: number;
+  };
+}
+
 /**
  * Servicio de gestión de Entes
  * Contiene todas las llamadas HTTP relacionadas con Entes
@@ -98,6 +127,37 @@ export const enteService = {
       }
 
       // Error de red u otro tipo
+      throw new Error('Error de conexión con el servidor');
+    }
+  },
+
+  /**
+   * Obtiene la lista completa de Entes
+   * Endpoint privado - requiere autenticación
+   *
+   * @param token - Token JWT opcional (necesario para Server Components)
+   * @returns Promise con array de Entes
+   * @throws Error si la petición falla
+   */
+  getEntes: async (token?: string): Promise<EnteListItem[]> => {
+    try {
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+      const response = await apiClient.get<EnteListItem[]>('/entes', config);
+      return response.data;
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'data' in error.response
+      ) {
+        const responseData = error.response.data as { message?: string };
+        throw new Error(responseData.message || 'Error al obtener Entes');
+      }
       throw new Error('Error de conexión con el servidor');
     }
   },
