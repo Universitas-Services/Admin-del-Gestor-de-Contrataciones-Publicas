@@ -45,6 +45,7 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --color-highlight-blue: var(--highlight-blue);
 }
 
 :root {
@@ -86,6 +87,7 @@
   --sidebar-border: oklch(0.464 0.045 253);
   /* Lighter border for visibility */
   --sidebar-ring: oklch(0.45 0.1 250);
+  --highlight-blue: oklch(0.925 0.016 240);
 }
 
 @layer base {

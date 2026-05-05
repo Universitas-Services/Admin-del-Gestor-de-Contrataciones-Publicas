@@ -11,7 +11,7 @@ import {
   SortingState,
   getSortedRowModel,
 } from '@tanstack/react-table';
-import { EnteListItem } from '@/services/enteService';
+import { SupervisorListItem } from '@/services/supervisorService';
 import {
   Table,
   TableBody,
@@ -24,14 +24,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit, Trash2, ArrowUpDown } from 'lucide-react';
 
-interface EntesTableProps {
-  data: EnteListItem[];
+interface SupervisoresTableProps {
+  data: SupervisorListItem[];
 }
 
-export function EntesTable({ data }: EntesTableProps) {
+export function SupervisoresTable({ data }: SupervisoresTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
 
-  const columns: ColumnDef<EnteListItem>[] = [
+  const columns: ColumnDef<SupervisorListItem>[] = [
     {
       accessorKey: 'nombre',
       header: ({ column }) => {
@@ -44,7 +44,7 @@ export function EntesTable({ data }: EntesTableProps) {
               }
               className="hover:bg-muted"
             >
-              Nombre del Ente
+              Nombre del Supervisor
               <ArrowUpDown className="ml-2 h-4 w-4" />
             </Button>
           </div>
@@ -52,7 +52,7 @@ export function EntesTable({ data }: EntesTableProps) {
       },
       cell: ({ row }) => (
         <Link
-          href={`/dashboard/ente/${row.original.id}`}
+          href={`/dashboard/supervisor/${row.original.id}`}
           className="text-foreground hover:text-primary font-semibold transition-colors hover:underline"
         >
           {row.getValue('nombre')}
@@ -60,33 +60,26 @@ export function EntesTable({ data }: EntesTableProps) {
       ),
     },
     {
-      accessorKey: 'rif',
-      header: 'RIF',
+      accessorKey: 'email',
+      header: 'Correo Electrónico',
       cell: ({ row }) => (
-        <div className="text-muted-foreground">{row.getValue('rif')}</div>
+        <div className="text-muted-foreground">{row.getValue('email')}</div>
       ),
     },
     {
-      id: 'ubicacion',
-      header: 'Ubicación',
+      accessorKey: 'cantidadEntesAsignados',
+      header: 'Entes Asignados',
       cell: ({ row }) => {
-        const estado = row.original.estado;
-        const municipio = row.original.municipio;
-        if (estado && municipio) {
-          return (
-            <span className="text-muted-foreground">{`${estado}, ${municipio}`}</span>
-          );
-        }
         return (
-          <span className="text-muted-foreground">
-            {estado || municipio || 'N/A'}
+          <span className="font-medium">
+            {row.getValue('cantidadEntesAsignados')}
           </span>
         );
       },
     },
     {
       accessorKey: 'createdAt',
-      header: 'Fecha de Creación',
+      header: 'Fecha de Registro',
       cell: ({ row }) => {
         const date = new Date(row.getValue('createdAt'));
         return (
@@ -101,32 +94,20 @@ export function EntesTable({ data }: EntesTableProps) {
       },
     },
     {
-      id: 'usuarios',
-      header: 'Usuarios',
-      cell: ({ row }) => {
-        return (
-          <span className="font-medium">
-            {row.original._count?.usuarios || 0}
-          </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'datosConfirmados',
+      accessorKey: 'activo',
       header: 'Estatus',
       cell: ({ row }) => {
-        const isConfirmed = row.getValue('datosConfirmados') as boolean;
-        // Colores que empatan con el tema (evitando hex hardcodeados, usando variantes o colores estándar de tailwind)
+        const isActive = row.getValue('activo') as boolean;
         return (
           <Badge
             variant="outline"
             className={
-              isConfirmed
+              isActive
                 ? 'border-green-500/20 bg-green-500/10 text-green-600'
-                : 'border-yellow-500/20 bg-yellow-500/10 text-yellow-600'
+                : 'border-red-500/20 bg-red-500/10 text-red-600'
             }
           >
-            {isConfirmed ? 'Completado' : 'Por completar'}
+            {isActive ? 'Activo' : 'Inactivo'}
           </Badge>
         );
       },

@@ -161,4 +161,65 @@ export const enteService = {
       throw new Error('Error de conexión con el servidor');
     }
   },
+
+  /**
+   * Obtiene los detalles de un Ente por su ID
+   * Endpoint privado - requiere autenticación
+   *
+   * @param id - ID del Ente
+   * @param token - Token JWT opcional (necesario para Server Components)
+   * @returns Promise con los detalles del Ente
+   * @throws Error si la petición falla
+   */
+  getEnteById: async (id: string, token?: string): Promise<EnteDetail> => {
+    try {
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+      const response = await apiClient.get<EnteDetail>(`/entes/${id}`, config);
+      return response.data;
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'data' in error.response
+      ) {
+        const responseData = error.response.data as { message?: string };
+        throw new Error(
+          responseData.message || 'Error al obtener los detalles del Ente'
+        );
+      }
+      throw new Error('Error de conexión con el servidor');
+    }
+  },
 };
+
+export interface EnteDetail {
+  id: string;
+  universitasId: string;
+  nombre: string;
+  rif: string;
+  siglas: string | null;
+  logoUrl: string | null;
+  direccionFiscal: string | null;
+  estado: string | null;
+  municipio: string | null;
+  parroquia: string | null;
+  nombreUnidadAdminFinanciera: string | null;
+  nombreUnidadTecnologia: string | null;
+  nombreUnidadContratante: string | null;
+  organoAdscripcion: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  createdBy: string | null;
+  updatedBy: string | null;
+  datosConfirmados: boolean;
+  ciudad: string | null;
+  usuarios: unknown[];
+  maximasAutoridades: unknown[];
+  comisiones: unknown[];
+}

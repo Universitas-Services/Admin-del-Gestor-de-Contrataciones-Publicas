@@ -31,8 +31,14 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     title: 'Supervisor',
-    href: '/dashboard/supervisor',
     icon: ShieldUser,
+    subItems: [
+      { title: 'Registrar Supervisor', href: '/dashboard/supervisor' },
+      {
+        title: 'Listado de Supervisores',
+        href: '/dashboard/supervisor/listado',
+      },
+    ],
   },
   {
     title: 'Contrataciones',

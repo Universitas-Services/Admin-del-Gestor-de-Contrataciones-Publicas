@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { FileText, ChevronRight } from 'lucide-react';
+import { ChevronRight, Menu } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +16,8 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
   SidebarMenuSubButton,
+  SidebarRail,
+  useSidebar,
 } from '@/components/ui/sidebar';
 import {
   Collapsible,
@@ -43,22 +46,36 @@ interface AppSidebarProps {
  * - Estado persistente en cookies
  * - Soporte automático para mobile (Sheet)
  */
-export default function AppSidebar({ user }: AppSidebarProps) {
+export default function AppSidebar({}: AppSidebarProps) {
   const pathname = usePathname();
+  const { state, toggleSidebar } = useSidebar();
 
   return (
     <Sidebar variant="floating" collapsible="icon">
       {/* Header del Sidebar */}
-      <SidebarHeader className="border-b">
-        <div className="flex items-center space-x-3 px-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:space-x-0 group-data-[collapsible=icon]:px-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-cyan-400 to-blue-600">
-            <FileText className="h-6 w-6 text-white" />
-          </div>
-          <div className="group-data-[collapsible=icon]:hidden">
-            <h1 className="text-lg font-bold">UNIVERSITAS</h1>
-            <p className="text-muted-foreground text-xs">{user.email}</p>
-          </div>
-        </div>
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={toggleSidebar}
+              tooltip={
+                state === 'expanded' ? 'Comprimir menú' : 'Desplegar menú'
+              }
+            >
+              <Menu />
+              <div className="flex flex-1 items-center justify-center pr-6 group-data-[collapsible=icon]:hidden">
+                <Image
+                  src="/LOGO UNIVERSITAS LEGAL (BLANCO).png"
+                  alt="Universitas Logo"
+                  width={120}
+                  height={30}
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       {/* Contenido del Sidebar */}
@@ -134,11 +151,12 @@ export default function AppSidebar({ user }: AppSidebarProps) {
 
       {/* Footer del Sidebar */}
       <SidebarFooter>
-        <div className="bg-sidebar-accent text-muted-foreground rounded-lg p-3 text-center text-xs group-data-[collapsible=icon]:hidden">
+        <div className="bg-sidebar-accent text-muted-foreground mb-2 rounded-lg p-3 text-center text-xs group-data-[collapsible=icon]:hidden">
           <p>v1.0.0</p>
           <p className="mt-1">© 2026 UNIVERSITAS</p>
         </div>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 }
