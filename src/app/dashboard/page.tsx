@@ -1,11 +1,29 @@
+import { cookies } from 'next/headers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, Users, CheckCircle, Clock } from 'lucide-react';
+import { enteService } from '@/services/enteService';
 
 /**
  * Página Principal del Dashboard
  * Muestra estadísticas y resumen del sistema
  */
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+
+  let metrics = {
+    totalEntes: 0,
+    totalSupervisores: 0,
+    completados: 0,
+    porCompletar: 0,
+  };
+
+  try {
+    metrics = await enteService.getDashboardMetrics(token);
+  } catch (error) {
+    console.error('Error fetching dashboard metrics:', error);
+    // You could handle the error visually or just let it show 0s
+  }
   return (
     <div className="space-y-8">
       {/* Encabezado */}
@@ -18,61 +36,63 @@ export default function DashboardPage() {
 
       {/* Tarjetas de Estadísticas */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {/* Total Contrataciones */}
+        {/* Total Entes */}
         <Card className="border-l-4 border-l-purple-600 transition-shadow hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Total Contrataciones
+              Total Entes
             </CardTitle>
             <FileText className="h-5 w-5 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">125</div>
-            <p className="mt-1 text-xs text-gray-500">
-              +12% desde el mes pasado
-            </p>
+            <div className="text-3xl font-bold text-gray-900">
+              {metrics.totalEntes}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Usuarios Activos */}
+        {/* Total Supervisores */}
         <Card className="border-l-4 border-l-blue-600 transition-shadow hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Usuarios Activos
+              Total Supervisores
             </CardTitle>
             <Users className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">48</div>
-            <p className="mt-1 text-xs text-gray-500">+3 nuevos esta semana</p>
+            <div className="text-3xl font-bold text-gray-900">
+              {metrics.totalSupervisores}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Contrataciones Aprobadas */}
+        {/* Completadas */}
         <Card className="border-l-4 border-l-green-600 transition-shadow hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Aprobadas
+              Completadas
             </CardTitle>
             <CheckCircle className="h-5 w-5 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">98</div>
-            <p className="mt-1 text-xs text-gray-500">78% del total</p>
+            <div className="text-3xl font-bold text-gray-900">
+              {metrics.completados}
+            </div>
           </CardContent>
         </Card>
 
-        {/* En Proceso */}
+        {/* Por completar */}
         <Card className="border-l-4 border-l-orange-600 transition-shadow hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              En Proceso
+              Por completar
             </CardTitle>
             <Clock className="h-5 w-5 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900">27</div>
-            <p className="mt-1 text-xs text-gray-500">Requieren revisión</p>
+            <div className="text-3xl font-bold text-gray-900">
+              {metrics.porCompletar}
+            </div>
           </CardContent>
         </Card>
       </div>

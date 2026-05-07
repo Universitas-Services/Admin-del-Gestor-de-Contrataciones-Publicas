@@ -13,6 +13,13 @@ export interface EnteSinSupervisor {
   municipio: string | null;
 }
 
+export interface DashboardMetrics {
+  totalEntes: number;
+  totalSupervisores: number;
+  completados: number;
+  porCompletar: number;
+}
+
 export interface EnteListItem {
   id: string;
   universitasId: string;
@@ -190,6 +197,42 @@ export const enteService = {
         const responseData = error.response.data as { message?: string };
         throw new Error(
           responseData.message || 'Error al obtener los detalles del Ente'
+        );
+      }
+      throw new Error('Error de conexión con el servidor');
+    }
+  },
+
+  /**
+   * Obtiene las métricas del dashboard
+   * Endpoint privado - requiere autenticación
+   *
+   * @param token - Token JWT opcional (necesario para Server Components)
+   * @returns Promise con las métricas del dashboard
+   * @throws Error si la petición falla
+   */
+  getDashboardMetrics: async (token?: string): Promise<DashboardMetrics> => {
+    try {
+      const config = token
+        ? { headers: { Authorization: `Bearer ${token}` } }
+        : {};
+      const response = await apiClient.get<DashboardMetrics>(
+        '/entes/dashboard/metrics',
+        config
+      );
+      return response.data;
+    } catch (error: unknown) {
+      if (
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'data' in error.response
+      ) {
+        const responseData = error.response.data as { message?: string };
+        throw new Error(
+          responseData.message || 'Error al obtener métricas del dashboard'
         );
       }
       throw new Error('Error de conexión con el servidor');
