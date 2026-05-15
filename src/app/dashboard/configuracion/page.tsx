@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings } from 'lucide-react';
+import { Settings, TrendingUp } from 'lucide-react';
+import Link from 'next/link';
 
 /**
  * Página de Configuración
- * Placeholder: Funcionalidad por implementar
  */
 export default function ConfiguracionPage() {
   return (
@@ -16,8 +16,24 @@ export default function ConfiguracionPage() {
         </p>
       </div>
 
+      <div className="flex flex-col gap-6">
+        {/* Acción: Actualización del valor UCAU */}
+        <Link href="/dashboard/configuracion/ucau" className="max-w-xs">
+          <Card className="group cursor-pointer border-l-4 border-l-blue-600 bg-blue-50/50 transition-all hover:bg-blue-100/50">
+            <CardHeader className="px-4 py-3">
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <CardTitle className="text-sm font-bold">
+                  Actualización del valor UCAU
+                </CardTitle>
+              </div>
+            </CardHeader>
+          </Card>
+        </Link>
+      </div>
+
       {/* Contenido Placeholder */}
-      <Card className="border-l-4 border-l-green-600">
+      <Card className="border-l-4 border-l-green-600 bg-gray-50/50">
         <CardHeader>
           <div className="flex items-center space-x-3">
             <Settings className="h-8 w-8 text-green-600" />
