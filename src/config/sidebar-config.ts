@@ -9,9 +9,10 @@ import {
 
 export interface SidebarItem {
   title: string;
-  href: string;
+  href?: string;
   icon: React.ElementType;
   badge?: string | number;
+  subItems?: { title: string; href: string }[];
 }
 
 export const sidebarItems: SidebarItem[] = [
@@ -22,13 +23,22 @@ export const sidebarItems: SidebarItem[] = [
   },
   {
     title: 'Ente',
-    href: '/dashboard/ente',
     icon: Building2,
+    subItems: [
+      { title: 'Registrar Ente', href: '/dashboard/ente' },
+      { title: 'Listado de Entes', href: '/dashboard/ente/listado' },
+    ],
   },
   {
     title: 'Supervisor',
-    href: '/dashboard/supervisor',
     icon: ShieldUser,
+    subItems: [
+      { title: 'Registrar Supervisor', href: '/dashboard/supervisor' },
+      {
+        title: 'Listado de Supervisores',
+        href: '/dashboard/supervisor/listado',
+      },
+    ],
   },
   {
     title: 'Contrataciones',

@@ -27,6 +27,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { api } from '@/lib/api';
+import { useEffect } from 'react';
 
 /**
  * Componente CreateEnteForm
@@ -42,6 +51,13 @@ import { Loader2 } from 'lucide-react';
  */
 export default function CreateEnteForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [estados, setEstados] = useState<{ id: number; nombre: string }[]>([]);
+  const [municipios, setMunicipios] = useState<
+    { id: number; nombre: string }[]
+  >([]);
+  const [parroquias, setParroquias] = useState<
+    { id: number; nombre: string }[]
+  >([]);
 
   const form = useForm<CreateEnteFormData>({
     resolver: zodResolver(createEnteSchema),
@@ -60,16 +76,107 @@ export default function CreateEnteForm() {
     },
   });
 
+  const watchEstadoId = form.watch('estado');
+  const watchMunicipioId = form.watch('municipio');
+
+  // Cargar estados al inicio
+  useEffect(() => {
+    const fetchEstados = async () => {
+      try {
+        const response = await api.territorio.getEstados();
+        console.log('Full SDK response for estados:', response);
+        if (response && response.data) {
+          setEstados(response.data);
+        } else if (Array.isArray(response)) {
+          setEstados(response);
+        }
+      } catch (error) {
+        console.error('Error fetching estados:', error);
+      }
+    };
+    fetchEstados();
+  }, []);
+
+  // Cargar municipios cuando cambia el estado
+  useEffect(() => {
+    if (!watchEstadoId) {
+      setMunicipios([]);
+      setParroquias([]);
+      return;
+    }
+
+    const fetchMunicipios = async () => {
+      try {
+        const response = await api.territorio.getMunicipios(
+          Number(watchEstadoId)
+        );
+        console.log('Municipios response:', response);
+        if (response && response.data) {
+          setMunicipios(response.data);
+        } else if (Array.isArray(response)) {
+          setMunicipios(response);
+        }
+        // Limpiar campos dependientes
+        form.setValue('municipio', '');
+        form.setValue('parroquia', '');
+      } catch (error) {
+        console.error('Error fetching municipios:', error);
+      }
+    };
+    fetchMunicipios();
+  }, [watchEstadoId, form]);
+
+  // Cargar parroquias cuando cambia el municipio
+  useEffect(() => {
+    if (!watchMunicipioId) {
+      setParroquias([]);
+      return;
+    }
+
+    const fetchParroquias = async () => {
+      try {
+        const response = await api.territorio.getParroquias(
+          Number(watchMunicipioId)
+        );
+        console.log('Parroquias response:', response);
+        if (response && response.data) {
+          setParroquias(response.data);
+        } else if (Array.isArray(response)) {
+          setParroquias(response);
+        }
+        // Limpiar campo dependiente
+        form.setValue('parroquia', '');
+      } catch (error) {
+        console.error('Error fetching parroquias:', error);
+      }
+    };
+    fetchParroquias();
+  }, [watchMunicipioId, form]);
+
   async function onSubmit(values: CreateEnteFormData) {
     try {
       setIsSubmitting(true);
-      const response = await enteService.create(values);
+
+      // Mapear IDs a nombres antes de enviar al backend
+      const payload = {
+        ...values,
+        estado:
+          estados.find((e) => e.id.toString() === values.estado)?.nombre ||
+          values.estado,
+        municipio:
+          municipios.find((m) => m.id.toString() === values.municipio)
+            ?.nombre || values.municipio,
+        parroquia:
+          parroquias.find((p) => p.id.toString() === values.parroquia)
+            ?.nombre || values.parroquia,
+      };
+
+      const response = await enteService.create(payload);
 
       toast.success('¡Éxito!', {
-        description: response.message, // "Ente creado exitosamente"
+        description: response.message,
       });
 
-      // Resetear formulario
       form.reset();
     } catch (error) {
       toast.error('Error al crear el Ente', {
@@ -240,67 +347,96 @@ export default function CreateEnteForm() {
               )}
             />
 
-            {/* Estado - Dropdown temporal */}
+            {/* Estado */}
             <FormField
               control={form.control}
               name="estado"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Estado</FormLabel>
-                  <FormControl>
-                    <select
-                      className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none"
-                      {...field}
-                    >
-                      <option value="">Seleccione un estado</option>
-                      <option value="Distrito Capital">Distrito Capital</option>
-                      <option value="Miranda">Miranda</option>
-                    </select>
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleccione un estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent position="popper">
+                      {estados.map((estado) => (
+                        <SelectItem
+                          key={estado.id}
+                          value={estado.id.toString()}
+                        >
+                          {estado.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Municipio - Dropdown temporal */}
+            {/* Municipio */}
             <FormField
               control={form.control}
               name="municipio"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Municipio</FormLabel>
-                  <FormControl>
-                    <select
-                      className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none"
-                      {...field}
-                    >
-                      <option value="">Seleccione un municipio</option>
-                      <option value="Libertador">Libertador</option>
-                      <option value="Chacao">Chacao</option>
-                    </select>
-                  </FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!watchEstadoId || municipios.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleccione un municipio" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent position="popper">
+                      {municipios.map((municipio) => (
+                        <SelectItem
+                          key={municipio.id}
+                          value={municipio.id.toString()}
+                        >
+                          {municipio.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Parroquia - Dropdown temporal */}
+            {/* Parroquia */}
             <FormField
               control={form.control}
               name="parroquia"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Parroquia</FormLabel>
-                  <FormControl>
-                    <select
-                      className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none"
-                      {...field}
-                    >
-                      <option value="">Seleccione una parroquia</option>
-                      <option value="Catedral">Catedral</option>
-                      <option value="San Juan">San Juan</option>
-                    </select>
-                  </FormControl>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={!watchMunicipioId || parroquias.length === 0}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleccione una parroquia" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent position="popper">
+                      {parroquias.map((parroquia) => (
+                        <SelectItem
+                          key={parroquia.id}
+                          value={parroquia.id.toString()}
+                        >
+                          {parroquia.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
