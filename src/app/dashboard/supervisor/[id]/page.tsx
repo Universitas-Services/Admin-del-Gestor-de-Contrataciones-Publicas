@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import SupervisorDetailActions from '@/components/supervisor/SupervisorDetailActions';
 import {
   ArrowLeft,
   Edit,
@@ -81,19 +82,10 @@ export default async function SupervisorDetailPage({
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <Button variant="outline" className="gap-2 border-slate-200">
-                <Edit className="h-4 w-4" />
-                Editar
-              </Button>
-              <Button
-                variant="destructive"
-                className="gap-2 border-none bg-red-500/10 text-red-600 hover:bg-red-500/20 hover:text-red-700"
-              >
-                <Ban className="h-4 w-4" />
-                Suspender
-              </Button>
-            </div>
+            <SupervisorDetailActions
+              targetUserId={supervisor.id}
+              supervisorName={supervisor.nombre}
+            />
           </div>
         </CardContent>
       </Card>

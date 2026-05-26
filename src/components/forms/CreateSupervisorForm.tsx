@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Plus, X, Loader2 } from 'lucide-react';
+import { Plus, X, Loader2, Eye, EyeOff } from 'lucide-react';
 import {
   createSupervisorSchema,
   type CreateSupervisorFormData,
@@ -41,18 +41,12 @@ import {
 
 /**
  * Formulario para crear un Supervisor con su Organización y asignación de Entes
- *
- * Características:
- * - React Hook Form + Zod validation
- * - 3 Cards: Organización, Usuario, Entes
- * - Sheet modularizado para selección de Entes
- * - Deselección desde lista principal
- * - Entes opcionales
  */
 export default function CreateSupervisorForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedEntes, setSelectedEntes] = useState<EnteSinSupervisor[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<CreateSupervisorFormData>({
     resolver: zodResolver(createSupervisorSchema),
@@ -111,9 +105,11 @@ export default function CreateSupervisorForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         {/* Card 1: Información de la Organización */}
-        <Card>
+        <Card className="border-border shadow-md">
           <CardHeader>
-            <CardTitle>Información de la Organización</CardTitle>
+            <CardTitle className="text-xl font-bold tracking-tight">
+              Información de la Organización
+            </CardTitle>
             <CardDescription>
               Datos de la organización del Supervisor
             </CardDescription>
@@ -125,9 +121,17 @@ export default function CreateSupervisorForm() {
               name="nombreOrganizacion"
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
-                  <FormLabel>Nombre de la Organización *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    Nombre de la Organización *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: Contraloría Municipal
+                  </span>
                   <FormControl>
-                    <Input placeholder="Ej: Contraloría Municipal" {...field} />
+                    <Input
+                      className="bg-background focus-visible:ring-primary"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,9 +144,17 @@ export default function CreateSupervisorForm() {
               name="rifOrganizacion"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>RIF de la Organización *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    RIF de la Organización *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: G-20000000-1
+                  </span>
                   <FormControl>
-                    <Input placeholder="Ej: G-20000000-1" {...field} />
+                    <Input
+                      className="bg-background focus-visible:ring-primary"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -155,11 +167,16 @@ export default function CreateSupervisorForm() {
               name="emailOrganizacion"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email de la Organización *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    Email de la Organización *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: contacto@contraloria.gob.ve
+                  </span>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="Ej: contacto@contraloria.gob.ve"
+                      className="bg-background focus-visible:ring-primary"
                       {...field}
                     />
                   </FormControl>
@@ -171,9 +188,11 @@ export default function CreateSupervisorForm() {
         </Card>
 
         {/* Card 2: Información del Usuario Supervisor */}
-        <Card>
+        <Card className="border-border shadow-md">
           <CardHeader>
-            <CardTitle>Información del Usuario Supervisor</CardTitle>
+            <CardTitle className="text-xl font-bold tracking-tight">
+              Información del Usuario Supervisor
+            </CardTitle>
             <CardDescription>
               Datos del usuario que administrará como Supervisor
             </CardDescription>
@@ -185,9 +204,17 @@ export default function CreateSupervisorForm() {
               name="nombreUsuario"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre del Usuario *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    Nombre del Usuario *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: Carlos
+                  </span>
                   <FormControl>
-                    <Input placeholder="Ej: Carlos" {...field} />
+                    <Input
+                      className="bg-background focus-visible:ring-primary"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -200,9 +227,17 @@ export default function CreateSupervisorForm() {
               name="apellidoUsuario"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Apellido del Usuario *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    Apellido del Usuario *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: Ramírez
+                  </span>
                   <FormControl>
-                    <Input placeholder="Ej: Ramírez" {...field} />
+                    <Input
+                      className="bg-background focus-visible:ring-primary"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -215,11 +250,16 @@ export default function CreateSupervisorForm() {
               name="emailUsuario"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email del Usuario *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    Email del Usuario *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: carlos.ramirez@supervision.gob.ve
+                  </span>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="Ej: carlos.ramirez@supervision.gob.ve"
+                      className="bg-background focus-visible:ring-primary"
                       {...field}
                     />
                   </FormControl>
@@ -234,13 +274,29 @@ export default function CreateSupervisorForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña *</FormLabel>
+                  <FormLabel className="font-semibold">Contraseña *</FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: ClaveTemp123!
+                  </span>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Contraseña temporal"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        className="bg-background focus-visible:ring-primary pr-10"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors focus:outline-none"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" aria-hidden="true" />
+                        ) : (
+                          <Eye className="h-4 w-4" aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -250,11 +306,13 @@ export default function CreateSupervisorForm() {
         </Card>
 
         {/* Card 3: Entes Asignados */}
-        <Card>
+        <Card className="border-border shadow-md">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Entes Asignados</CardTitle>
+                <CardTitle className="text-xl font-bold tracking-tight">
+                  Entes Asignados
+                </CardTitle>
                 <CardDescription>
                   Asigna Entes que este Supervisor gestionará (opcional)
                 </CardDescription>
@@ -263,7 +321,7 @@ export default function CreateSupervisorForm() {
               <Button
                 type="button"
                 variant="outline"
-                className="cursor-pointer"
+                className="cursor-pointer font-semibold shadow-sm"
                 onClick={() => setIsSheetOpen(true)}
               >
                 <Plus className="mr-2 h-4 w-4" />
@@ -335,7 +393,7 @@ export default function CreateSupervisorForm() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="min-w-32 cursor-pointer"
+            className="min-w-32 cursor-pointer font-semibold shadow-sm"
           >
             {isSubmitting ? (
               <>
