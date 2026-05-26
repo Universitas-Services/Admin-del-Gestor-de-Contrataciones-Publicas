@@ -1,10 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
-import { Plus, X, Loader2, Eye, EyeOff } from 'lucide-react';
+import {
+  Plus,
+  X,
+  Loader2,
+  Eye,
+  EyeOff,
+  Minus as MinusIcon,
+} from 'lucide-react';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import {
   createSupervisorSchema,
   type CreateSupervisorFormData,
@@ -22,6 +30,18 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from '@/components/ui/input-otp';
 import {
   Table,
   TableBody,
@@ -47,6 +67,10 @@ export default function CreateSupervisorForm() {
   const [selectedEntes, setSelectedEntes] = useState<EnteSinSupervisor[]>([]);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rifTipo, setRifTipo] = useState<'G' | 'J'>('G');
+  const [rifCuerpo, setRifCuerpo] = useState('');
+  const [rifVerificador, setRifVerificador] = useState('');
+  const rifVerificadorRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<CreateSupervisorFormData>({
     resolver: zodResolver(createSupervisorSchema),
@@ -61,6 +85,38 @@ export default function CreateSupervisorForm() {
     },
   });
 
+  // Hydration Effect
+  const currentRifValue = form.watch('rifOrganizacion');
+  useEffect(() => {
+    if (currentRifValue && currentRifValue.includes('-')) {
+      const parts = currentRifValue.split('-');
+      if (parts.length === 3) {
+        const [tipo, cuerpo, verificador] = parts;
+        if (tipo === 'G' || tipo === 'J') {
+          setRifTipo(tipo);
+        }
+        setRifCuerpo(cuerpo);
+        setRifVerificador(verificador);
+      }
+    }
+  }, [currentRifValue]);
+
+  // Sync Effect
+  useEffect(() => {
+    if (rifCuerpo.length === 8 && rifVerificador.length === 1) {
+      const formattedRif = `${rifTipo}-${rifCuerpo}-${rifVerificador}`;
+      form.setValue('rifOrganizacion', formattedRif, { shouldValidate: true });
+    } else {
+      form.setValue('rifOrganizacion', '');
+    }
+  }, [rifTipo, rifCuerpo, rifVerificador, form]);
+
+  // Auto-focus to Verificador when body has 8 digits
+  useEffect(() => {
+    if (rifCuerpo.length === 8) {
+      rifVerificadorRef.current?.focus();
+    }
+  }, [rifCuerpo]);
   // Función para agregar un Ente a la selección
   function handleAddEnte(ente: EnteSinSupervisor) {
     setSelectedEntes((prev) => [...prev, ente]);
@@ -136,13 +192,12 @@ export default function CreateSupervisorForm() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
-
+            />{' '}
             {/* RIF Organización */}
             <FormField
               control={form.control}
               name="rifOrganizacion"
-              render={({ field }) => (
+              render={() => (
                 <FormItem>
                   <FormLabel className="font-semibold">
                     RIF de la Organización *
@@ -151,16 +206,54 @@ export default function CreateSupervisorForm() {
                     Ejemplo: G-20000000-1
                   </span>
                   <FormControl>
-                    <Input
-                      className="bg-background focus-visible:ring-primary"
-                      {...field}
-                    />
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={rifTipo}
+                        onValueChange={(val: 'G' | 'J') => setRifTipo(val)}
+                      >
+                        <SelectTrigger className="bg-background focus:ring-primary h-11 w-[70px]">
+                          <SelectValue placeholder="Tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="G">G</SelectItem>
+                          <SelectItem value="J">J</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <InputOTP
+                        maxLength={8}
+                        pattern={REGEXP_ONLY_DIGITS}
+                        value={rifCuerpo}
+                        onChange={(val) => setRifCuerpo(val)}
+                      >
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} className="h-11 w-8" />
+                          <InputOTPSlot index={1} className="h-11 w-8" />
+                          <InputOTPSlot index={2} className="h-11 w-8" />
+                          <InputOTPSlot index={3} className="h-11 w-8" />
+                          <InputOTPSlot index={4} className="h-11 w-8" />
+                          <InputOTPSlot index={5} className="h-11 w-8" />
+                          <InputOTPSlot index={6} className="h-11 w-8" />
+                          <InputOTPSlot index={7} className="h-11 w-8" />
+                        </InputOTPGroup>
+                      </InputOTP>
+                      <MinusIcon className="text-muted-foreground h-4 w-4" />
+                      <InputOTP
+                        ref={rifVerificadorRef}
+                        maxLength={1}
+                        pattern={REGEXP_ONLY_DIGITS}
+                        value={rifVerificador}
+                        onChange={(val) => setRifVerificador(val)}
+                      >
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} className="h-11 w-8" />
+                        </InputOTPGroup>
+                      </InputOTP>{' '}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
             {/* Email Organización */}
             <FormField
               control={form.control}
