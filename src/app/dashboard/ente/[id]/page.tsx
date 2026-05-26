@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import EnteDetailActions from '@/components/ente/EnteDetailActions';
 import {
   Building2,
   MapPin,
@@ -76,15 +77,15 @@ export default async function EnteDetailPage({
           <span className="text-foreground font-medium">Detalle</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            className="bg-background border-border gap-2 shadow-sm"
-          >
-            <Edit className="h-4 w-4" />
-            Editar
-          </Button>
-        </div>
+        {/* Find the ADMIN_ENTE user's ID inside the Ente's users list */}
+        <EnteDetailActions
+          targetUserId={
+            (ente.usuarios as Array<{ id: string; rol: string }>)?.find(
+              (u) => u.rol === 'ADMIN_ENTE'
+            )?.id || ente.universitasId
+          }
+          enteName={ente.nombre}
+        />
       </div>
 
       <div className="mx-auto w-full max-w-7xl space-y-8">
