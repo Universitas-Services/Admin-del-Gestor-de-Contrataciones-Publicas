@@ -26,38 +26,15 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { api } from '@/lib/api';
-import { useEffect } from 'react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 /**
  * Componente CreateEnteForm
- * Formulario completo para crear un Ente Público con su Admin Ente
- *
- * Características:
- * - React Hook Form + Zod resolver para validaciones
- * - 2 Cards separados (Información del Ente + Información del Admin)
- * - Dropdowns para ubicación (estado, municipio, parroquia)
- * - Feedback con toast (sonner)
- * - Loading state en el botón
- * - Layout responsive (2 columnas en desktop, 1 en mobile)
+ * Formulario simplificado para crear un Ente Público con su Admin Ente
  */
 export default function CreateEnteForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [estados, setEstados] = useState<{ id: number; nombre: string }[]>([]);
-  const [municipios, setMunicipios] = useState<
-    { id: number; nombre: string }[]
-  >([]);
-  const [parroquias, setParroquias] = useState<
-    { id: number; nombre: string }[]
-  >([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<CreateEnteFormData>({
     resolver: zodResolver(createEnteSchema),
@@ -76,102 +53,10 @@ export default function CreateEnteForm() {
     },
   });
 
-  const watchEstadoId = form.watch('estado');
-  const watchMunicipioId = form.watch('municipio');
-
-  // Cargar estados al inicio
-  useEffect(() => {
-    const fetchEstados = async () => {
-      try {
-        const response = await api.territorio.getEstados();
-        console.log('Full SDK response for estados:', response);
-        if (response && response.data) {
-          setEstados(response.data);
-        } else if (Array.isArray(response)) {
-          setEstados(response);
-        }
-      } catch (error) {
-        console.error('Error fetching estados:', error);
-      }
-    };
-    fetchEstados();
-  }, []);
-
-  // Cargar municipios cuando cambia el estado
-  useEffect(() => {
-    if (!watchEstadoId) {
-      setMunicipios([]);
-      setParroquias([]);
-      return;
-    }
-
-    const fetchMunicipios = async () => {
-      try {
-        const response = await api.territorio.getMunicipios(
-          Number(watchEstadoId)
-        );
-        console.log('Municipios response:', response);
-        if (response && response.data) {
-          setMunicipios(response.data);
-        } else if (Array.isArray(response)) {
-          setMunicipios(response);
-        }
-        // Limpiar campos dependientes
-        form.setValue('municipio', '');
-        form.setValue('parroquia', '');
-      } catch (error) {
-        console.error('Error fetching municipios:', error);
-      }
-    };
-    fetchMunicipios();
-  }, [watchEstadoId, form]);
-
-  // Cargar parroquias cuando cambia el municipio
-  useEffect(() => {
-    if (!watchMunicipioId) {
-      setParroquias([]);
-      return;
-    }
-
-    const fetchParroquias = async () => {
-      try {
-        const response = await api.territorio.getParroquias(
-          Number(watchMunicipioId)
-        );
-        console.log('Parroquias response:', response);
-        if (response && response.data) {
-          setParroquias(response.data);
-        } else if (Array.isArray(response)) {
-          setParroquias(response);
-        }
-        // Limpiar campo dependiente
-        form.setValue('parroquia', '');
-      } catch (error) {
-        console.error('Error fetching parroquias:', error);
-      }
-    };
-    fetchParroquias();
-  }, [watchMunicipioId, form]);
-
   async function onSubmit(values: CreateEnteFormData) {
     try {
       setIsSubmitting(true);
-
-      // Mapear IDs a nombres antes de enviar al backend
-      const payload = {
-        ...values,
-        estado:
-          estados.find((e) => e.id.toString() === values.estado)?.nombre ||
-          values.estado,
-        municipio:
-          municipios.find((m) => m.id.toString() === values.municipio)
-            ?.nombre || values.municipio,
-        parroquia:
-          parroquias.find((p) => p.id.toString() === values.parroquia)
-            ?.nombre || values.parroquia,
-      };
-
-      const response = await enteService.create(payload);
+      const response = await enteService.create(values);
 
       toast.success('¡Éxito!', {
         description: response.message,
@@ -193,25 +78,32 @@ export default function CreateEnteForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Card 1: Información del Ente */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del Ente</CardTitle>
+        <Card className="border-border shadow-md">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-bold tracking-tight">
+              Información de Creación de Ente
+            </CardTitle>
             <CardDescription>
-              Datos generales del Ente Público a registrar
+              Complete los siguientes campos obligatorios para registrar el
+              nuevo Ente Público y su administrador.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-5">
             {/* Nombre del Ente */}
             <FormField
               control={form.control}
               name="nombre"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre del Ente *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    Nombre del Ente *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: Alcaldía del Municipio Libertador
+                  </span>
                   <FormControl>
                     <Input
-                      placeholder="Ej: Alcaldía del Municipio Libertador"
+                      className="bg-background focus-visible:ring-primary"
                       {...field}
                     />
                   </FormControl>
@@ -219,47 +111,54 @@ export default function CreateEnteForm() {
                 </FormItem>
               )}
             />
-          </CardContent>
-        </Card>
 
-        {/*  Card 2: Información del Admin Ente */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Información del Admin Ente</CardTitle>
-            <CardDescription>
-              Datos del usuario administrador del Ente
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-6 md:grid-cols-2">
-            {/* Nombre Admin */}
-            <FormField
-              control={form.control}
-              name="nombreAdmin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre del Administrador *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: Juan" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid gap-5 md:grid-cols-2">
+              {/* Nombre Admin */}
+              <FormField
+                control={form.control}
+                name="nombreAdmin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">
+                      Nombre del administrador *
+                    </FormLabel>
+                    <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                      Ejemplo: Juan
+                    </span>
+                    <FormControl>
+                      <Input
+                        className="bg-background focus-visible:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Apellido Admin */}
-            <FormField
-              control={form.control}
-              name="apellidoAdmin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Apellido del Administrador *</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: Pérez" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              {/* Apellido Admin */}
+              <FormField
+                control={form.control}
+                name="apellidoAdmin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="font-semibold">
+                      Apellido del administrador *
+                    </FormLabel>
+                    <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                      Ejemplo: Pérez
+                    </span>
+                    <FormControl>
+                      <Input
+                        className="bg-background focus-visible:ring-primary"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             {/* Email Contacto */}
             <FormField
@@ -267,11 +166,16 @@ export default function CreateEnteForm() {
               name="emailContacto"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email de Contacto *</FormLabel>
+                  <FormLabel className="font-semibold">
+                    Email de contacto *
+                  </FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: admin@alcaldia.gov.ve
+                  </span>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="Ej: admin@alcaldia.gov.ve"
+                      className="bg-background focus-visible:ring-primary"
                       {...field}
                     />
                   </FormControl>
@@ -286,157 +190,30 @@ export default function CreateEnteForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña *</FormLabel>
+                  <FormLabel className="font-semibold">Contraseña *</FormLabel>
+                  <span className="text-muted-foreground/75 -mt-1 mb-1.5 block text-xs">
+                    Ejemplo: ClaveTemp123!
+                  </span>
                   <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="Contraseña temporal"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        className="bg-background focus-visible:ring-primary pr-10"
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors focus:outline-none"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" aria-hidden="true" />
+                        ) : (
+                          <Eye className="h-4 w-4" aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* RIF */}
-            <FormField
-              control={form.control}
-              name="rif"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>RIF</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: J-20000000-0" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Siglas */}
-            <FormField
-              control={form.control}
-              name="siglas"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Siglas</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ej: AML" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Dirección Fiscal */}
-            <FormField
-              control={form.control}
-              name="direccionFiscal"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Dirección Fiscal</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Ej: Av. Urdaneta, Palacio Municipal"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Estado */}
-            <FormField
-              control={form.control}
-              name="estado"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Estado</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccione un estado" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent position="popper">
-                      {estados.map((estado) => (
-                        <SelectItem
-                          key={estado.id}
-                          value={estado.id.toString()}
-                        >
-                          {estado.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Municipio */}
-            <FormField
-              control={form.control}
-              name="municipio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Municipio</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={!watchEstadoId || municipios.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccione un municipio" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent position="popper">
-                      {municipios.map((municipio) => (
-                        <SelectItem
-                          key={municipio.id}
-                          value={municipio.id.toString()}
-                        >
-                          {municipio.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Parroquia */}
-            <FormField
-              control={form.control}
-              name="parroquia"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Parroquia</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    disabled={!watchMunicipioId || parroquias.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccione una parroquia" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent position="popper">
-                      {parroquias.map((parroquia) => (
-                        <SelectItem
-                          key={parroquia.id}
-                          value={parroquia.id.toString()}
-                        >
-                          {parroquia.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -446,7 +223,11 @@ export default function CreateEnteForm() {
 
         {/* Botón de Submit */}
         <div className="flex justify-end">
-          <Button type="submit" disabled={isSubmitting} className="min-w-32">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="min-w-32 font-semibold shadow-sm"
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
