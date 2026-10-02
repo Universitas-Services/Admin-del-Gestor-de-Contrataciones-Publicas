@@ -38,9 +38,11 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider defaultOpen={true}>
       <AppSidebar user={authenticatedUser} />
-      <SidebarInset>
+      <SidebarInset className="min-w-0 overflow-x-hidden">
         <Header user={authenticatedUser} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto p-6">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );
